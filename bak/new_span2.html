@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>New Span Form</title>
+<style>
+table, th, td {
+    border:	1px solid black;
+    width:	50%;
+}
+</style>
+</head>
+<body>
+
+<?php
+//echo "<b>Initializing...</b><br>";
+include("dbinfo.inc.php");
+include("funcs.php");
+$dbname		= "recs";
+$conn = new mysqli($server,$username,$password,$dbname);
+if ($conn->connect_error) {
+	die ("Unable to connect to server: " . $conn->connect_error() . "<br>");
+}
+$sql="SELECT idpeep,namelast,namefirst FROM recs.peeps";
+$result = $conn->query($sql);
+?>
+
+<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']);?>">
+<label for='name'>Peep:</label>
+<select name='peepsel' value='select'>
+<option value='0'>Select peep</option>
+<br>
+
+<?php
+while($rs = $result->fetch_object()) 
+{
+	$fullname = $rs->namelast . ', ' . $rs->namefirst;
+     echo "<option ";
+     if($_POST['peepsel']==$rs->idpeep) echo 'selected ';
+     echo "value='{$rs->idpeep}'>$fullname</option>\n";
+}
+?>
+</select>
+ 
+<input type="submit" name="submit" value="Select">
+
+</form>
+
+<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']);?>">
+<table>
+	<tr>
+		<th>Peep</th>
+		<th>From</th>
+		<th>To</th>
+		<th>Status</th>
+		<th>Facility</th>
+		<th>Pic</th>
+	</tr>
+	<tr>
+		<th>
+			<?php
+			$sql="SELECT idpeep,namelast,namefirst FROM recs.peeps";
+			$result = $conn->query($sql);
+			?>
+			<select name='idpeepsel' value='select'>
+				<option value='0'>Select peep</option>
+				<?php
+				while($rs = $result->fetch_object()) 
+				{
+					$fullname = $rs->namelast . ', ' . $rs->namefirst;
+				     echo "<option ";
+				     if($_POST['idpeepsel']==$rs->idpeep) echo 'selected ';
+				     echo "value='{$rs->idpeep}'>$fullname</option>\n";
+				}
+				?>
+			</select>
+		</th>	
+		<th><input type="text" name="startdate" id="startdate"></th>
+		<th><input type="text" name="stopdate" id="stopdate"></th>
+		<th>
+			<?php
+			$sql="SELECT idstatus,status FROM recs.status";
+			$result = $conn->query($sql);
+			$selected = "";
+			?>
+			<select name='statsel' value='select'>
+				<option value='0'>Select status</option>
+				<br>
+				
+				<?php
+				while($rs = $result->fetch_object()) 
+				{
+					echo "<option ";
+				     if($rs->idstatus=="3") echo 'selected ';
+				     echo "value='{$rs->idstatus}'>$rs->status</option>\n";
+				}
+				?>
+			</select>
+		</th>
+		<th>
+			<?php
+			$sql="SELECT idfacility,facility FROM recs.facilities";
+			$result = $conn->query($sql);
+			?>
+			<select name='facsel' value='select'>
+				<option value='0'>Select facility</option>
+				<br>
+				
+				<?php
+				while($rs = $result->fetch_object()) 
+				{
+					echo "<option ";
+				     if($rs->idfacility=="51") echo 'selected ';
+				     echo "value='{$rs->idfacility}'>$rs->facility</option>\n";
+				}
+				?>
+			</select>
+		</th>
+		<th><input type="text" name="picname" id="picname"></th>
+      </tr>
+</table>        
+    </p>
+    <input type="submit" name="addSpan" value="Add Span">
+</form>
+
+<?php if (isset($_POST['addSpan']) ) 
+{ 
+	//echo "idpeepsel=".$_POST['idpeepsel']."<br>";
+	echo "idpeepsel=";
+	$idpeepsel = $_POST['idpeepsel'];
+	$startdate = $_POST['startdate'];
+	$stopdate = $_POST['stopdate'];
+	$status = $_POST['statsel'];
+	$facility = $_POST['facsel'];
+	$picname = $_POST['picname'];
+	
+	
+	$sql4 = "INSERT INTO span (idpeep, startdate, stopdate, idstatus, idfacility, pic) ";
+	$sql4 .= " VALUES ('$idpeepsel','$startdate'";
+	if(!empty($stopdate))
+	{
+		$sql4 .= ", '$stopdate'";
+	}
+	else
+	{
+		$sql4 .= ", NULL";
+		echo "No stopdate: ". $stopdate ."<br>";
+	}
+	$sql4 .= ", '$status'";
+	if(empty($idfacility))
+	{
+		$sql4 .= ", '$facility'";
+	}
+	else
+	{
+		$sql4 .= ", NULL";
+		echo "No Facility: ". $facility ."<br>";
+	}
+	if(!empty($picname))
+	{
+		$sql4 .= ", '$picname'";
+	}
+	else
+	{
+		$sql4 .= ", NULL";
+		echo "No Pic: ". $picname ."<br>";
+	}
+	$sql4 .= ");";	
+	if ($conn->query($sql4) === TRUE)
+	{
+	    echo "Record updated successfully<br>";
+	} else {
+	    echo "Error updating record: " . $conn->error . "<br>";
+	}
+
+	echo $sql4 . "<br>";
+}
+?>
+
+
+
+<?php if (isset($_POST['submit'])) 
+{ 
+	$key = $_POST['peepsel'];
+	$sql3 = "SELECT span.idspan,span.startdate,span.stopdate,span.idstatus,span.pic,status.status ";
+	$sql3 = $sql3 . "FROM recs.span INNER JOIN status ON span.idstatus=status.idstatus ";
+	$sql3 = $sql3 . " WHERE span.idpeep='".$key."' ORDER BY span.startdate;";
+
+	//echo $sql3 . "<br>";
+	$path = "http://".$_SERVER["SERVER_NAME"]."/mugs/";
+	$result3 = $conn->query($sql3);
+
+} 
+?>
+
+</body>
+</html>

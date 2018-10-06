@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>View Span Form</title>
+<style>
+table {width: 100%;
+		border:	1px solid black;
+}
+table, th, td {
+    border:	1px solid black;
+}
+td.last {
+    width: 1px;
+    white-space: nowrap;
+}
+</style>
+</head>
+<body>
+
+<?php
+//echo "<b>Initializing...</b><br>";
+include("dbinfo.inc.php");
+include("funcs.php");
+$dbname		= "recs";
+$conn = new mysqli($server,$username,$password,$dbname);
+if ($conn->connect_error) {
+	die ("Unable to connect to server: " . $conn->connect_error() . "<br>");
+}
+$sql="SELECT idpeep,namelast,namefirst FROM recs.peeps ORDER BY namelast ASC";
+$result = $conn->query($sql);
+?>
+
+<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']);?>">
+<label for='name'>Peep:</label>
+<select name='peepsel' value='select'>
+<option value='0'>Select peep</option>
+<br>
+
+<?php
+while($rs = $result->fetch_object()) 
+{
+	$fullname = $rs->namelast . ', ' . $rs->namefirst;
+     echo "<option ";
+     if($_POST['peepsel']==$rs->idpeep) echo 'selected ';
+     echo "value='{$rs->idpeep}'>$fullname</option>\n";
+}
+?>
+</select>
+<input type="submit" name="submit" value="Select">
+</form>
+
+<table>
+	<tr>
+		<th>From</th>
+		<th>To</th>
+		<th>Status</th>
+		<th>Facility</th>
+		<th>Pic</th>
+	</tr>
+
+<?php if (isset($_POST['submit'])) 
+{ 
+	$key = $_POST['peepsel'];
+	$sql3 = "SELECT span.idspan, span.startdate, span.stopdate,";
+	$sql3 .=" span.idstatus, span.pic, status.status, span.idfacility, facilities.facility ";
+	$sql3 .= "FROM recs.span ";
+	$sql3 .= "INNER JOIN status ON span.idstatus=status.idstatus ";
+	$sql3 .= "INNER JOIN facilities ON span.idfacility=facilities.idfacility ";
+	$sql3 .= " WHERE span.idpeep='".$key."' ORDER BY span.startdate DESC;";
+
+	//echo $sql3 . "<br>";
+	$path = "http://".$_SERVER["SERVER_NAME"]."/mugs/";
+	$result3 = $conn->query($sql3);
+
+	while($rs3 = $result3->fetch_object( )) 
+	{ 
+		echo "<tr><th>" .$rs3->startdate."</th>";
+		$enddate = $rs3->stopdate;
+		if($enddate=="9999-12-31")
+		{
+			echo "<th>Currenty Incarcerated</th>";
+			$enddate = date("Y-m-d");
+		}
+		else if (!empty($enddate))
+			echo "<th>".$enddate."</th>";
+		else
+			echo "<th>No Date</th>";
+		echo "<th>". $rs3->status . "</th>";
+		echo "<th>". $rs3->facility . "</th>";
+		if(!empty($rs3->pic))
+		{
+			//echo "<th><img src=/mugs/".$rs3->pic." width='50' height='50'>";
+			echo "<th><a href=/mugs/".$rs3->pic."><img src=/mugs/".$rs3->pic." height='125' width='100'></a>";
+			echo "</th>";
+		}
+		else
+			echo "<th>No Pic</th>";
+		echo "</tr>";
+		
+		//. get_time_difference($rs3->startdate, $rs3->stopdate).; 
+		
+		if( $diff=@get_time_difference($rs3->startdate, $enddate) )
+		{
+			$yearcnt=$diff['years'];
+			$monthcnt=$diff['months'];
+			$daycnt=$diff['days'];
+			echo "<tr><th colspan=5>";
+  			echo "Time: ";
+			if (!empty($yearcnt))
+			{
+   				//sprintf( '%u', $yearcnt );
+ 				echo $yearcnt." Year";
+ 				if ($yearcnt>1)
+ 					echo "s, ";
+ 				else
+ 					echo ", ";
+   			}
+ 			if (!empty($monthcnt))
+ 			{
+				echo $monthcnt . " Month";
+				if ($monthcnt>1)
+					echo "s, ";
+				else
+					echo ", ";
+			}
+			if (!empty($daycnt))
+			{
+				echo $daycnt." Day";
+				if ($daycnt>1)
+					echo "s";
+			}
+			if ($yearcnt==0 && $monthcnt==0 && $daycnt==0)
+				echo " <1 Day";
+			echo "</th></tr>";
+		}
+	}
+} 
+?>
+</table>
+</body>
+</html>

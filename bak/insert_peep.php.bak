@@ -1,0 +1,35 @@
+<?php
+$str="<b>Initializing...</b><br>";
+echo $str;
+include("dbinfo.inc.php");
+
+$dbname		= "recs";
+
+echo "<b>Connecting...</b><br>";
+$conn = new mysqli($server,$username,$password,$dbname);
+
+//check conn
+if ($conn->connect_error) {
+	die ("Unable to connect to server: " . $conn->connect_error() . "<br>");
+}
+echo "<b>Connected!</b><br>";
+
+// Escape user inputs for security
+$last_name = mysqli_real_escape_string($conn, $_POST['lastname']);
+$first_name = mysqli_real_escape_string($conn, $_POST['firstname']);
+$mid_name = mysqli_real_escape_string($conn, $_POST['midname']);
+$dob = mysqli_real_escape_string($conn, $_POST['dob']);
+ 
+// attempt insert query execution
+$sql = "INSERT INTO peeps (namelast, namefirst, namemid, dob) VALUES ('$last_name', '$first_name', '$mid_name', '$dob')";
+if($conn->query($sql) === TRUE){
+	$last_id = $conn->insert_id;
+	echo "Records added successfully. Last inserted ID is: " . $last_id . "<br>";
+} else{
+    echo "ERROR: Could not able to execute $sql. " . $conn->error . "<br>";
+}
+
+$conn->close();
+
+
+?>

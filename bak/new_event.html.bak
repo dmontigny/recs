@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>New Event Form</title>
+<style>
+table { table-layout: fixed; width: 100%;
+		border:	1px solid black;
+}
+table, th, td {
+    border:	1px solid black;
+}
+td.last {
+    width: 1px;
+    white-space: nowrap;
+}
+</style>
+</head>
+<body>
+
+<?php
+//echo "<b>Initializing...</b><br>";
+include("dbinfo.inc.php");
+include("funcs.php");
+$dbname		= "recs";
+$conn = new mysqli($server,$username,$password,$dbname);
+if ($conn->connect_error) {
+	die ("Unable to connect to server: " . $conn->connect_error() . "<br>");
+}
+//$sql="SELECT idpeep,namelast,namefirst FROM recs.peeps";
+//$result = $conn->query($sql);
+?>
+
+<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']);?>">
+<table>
+	<tr>
+		<th>Peep</th>
+		<th>Event</th>
+		<th>Date</th>
+		<th>Time</th>
+		<th>Facility</th>
+	</tr>
+	<tr>
+		<th>
+			<?php
+			$sql="SELECT idpeep,namelast,namefirst FROM recs.peeps ORDER BY namelast ASC";
+			$result = $conn->query($sql);
+			?>
+			<select name='idpeepsel' value='select'>
+				<option value='0'>Select peep</option>
+				<?php
+				while($rs = $result->fetch_object()) 
+				{
+					$fullname = $rs->namelast . ', ' . $rs->namefirst;
+				     echo "<option ";
+				     if($_POST['idpeepsel']==$rs->idpeep) echo 'selected ';
+				     echo "value='{$rs->idpeep}'>$fullname</option>\n";
+				}
+				?>
+			</select>
+		</th>	
+		<th>
+			<?php
+			$sql="SELECT ideventtype,eventtype FROM recs.eventlist";
+			$result = $conn->query($sql);
+			?>
+			<select name='eventsel' value='select'>
+				<option value='0'>Select event type</option>
+				<br>
+				
+				<?php
+				while($rs = $result->fetch_object()) 
+				{
+					echo "<option ";
+				     if($rs->ideventtype=="1") echo 'selected ';
+				     echo "value='{$rs->ideventtype}'>$rs->eventtype</option>\n";
+				}
+				?>
+			</select>
+		</th>
+		<th><input type="text" name="eventdate" id="startdate"></th>
+		<th><input type="text" name="eventtime" id="stopdate"></th>
+		<th>
+			<?php
+			$sql="SELECT idfacility,facility FROM recs.facilities";
+			$result = $conn->query($sql);
+			?>
+			<select name='facsel' value='select'>
+				<option value='0'>Select facility</option>
+				<br>
+				
+				<?php
+				while($rs = $result->fetch_object()) 
+				{
+					echo "<option ";
+				     if($rs->idfacility=="51") echo 'selected ';
+				     echo "value='{$rs->idfacility}'>$rs->facility</option>\n";
+				}
+				?>
+			</select>
+		</th>
+      </tr>
+</table>        
+    </p>
+    <input type="submit" name="addSpan" value="Add Span">
+</form>
+
+<?php if (isset($_POST['addSpan']) ) 
+{ 
+	//echo "idpeepsel=".$_POST['idpeepsel']."<br>";
+	echo "idpeepsel=";
+	$idpeepsel 	= $_POST['idpeepsel'];
+	$eventtype 	= $_POST['eventsel'];
+	$eventdate 	= $_POST['eventdate'];
+	$eventtime 	= $_POST['eventtime'];
+	$facility 	= $_POST['facsel'];
+	
+	
+	$sql4 = "INSERT INTO events (idpeep, ideventtype, eventdate, eventtime, idfacility) ";
+	$sql4 .= " VALUES ('$idpeepsel','$eventtype','$eventdate'";
+	if(!empty($eventtime))
+	{
+		$sql4 .= ", '$eventtime'";
+	}
+	else
+	{
+		$sql4 .= ", NULL";
+		echo "No time: ". $eventtime ."<br>";
+	}
+	if(empty($idfacility))
+	{
+		$sql4 .= ", '$facility'";
+	}
+	else
+	{
+		$sql4 .= ", NULL";
+		echo "No Facility: ". $facility ."<br>";
+	}
+	$sql4 .= ");";	
+	if ($conn->query($sql4) === TRUE)
+	{
+	    echo "Record updated successfully<br>";
+	} else {
+	    echo "Error updating record: " . $conn->error . "<br>";
+	}
+
+	echo $sql4 . "<br>";
+}
+?>
+
+
+
+<?php
+/*
+if (isset($_POST['submit'])) 
+{ 
+	$key = $_POST['peepsel'];
+	$sql3 = "SELECT span.idspan,span.startdate,span.stopdate,span.idstatus,span.pic,status.status ";
+	$sql3 = $sql3 . "FROM recs.span INNER JOIN status ON span.idstatus=status.idstatus ";
+	$sql3 = $sql3 . " WHERE span.idpeep='".$key."' ORDER BY span.startdate;";
+
+	//echo $sql3 . "<br>";
+	$path = "http://".$_SERVER["SERVER_NAME"]."/mugs/";
+	$result3 = $conn->query($sql3);
+
+} 
+*/
+?>
+
+</body>
+</html>

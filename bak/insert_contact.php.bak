@@ -1,0 +1,64 @@
+<?php
+$str="<b>Initializing...</b><br>";
+echo $str;
+
+$server 	= "localhost";
+$username	= "root";
+$password	= "37sunrise";
+$dbname		= "apache_test";
+
+echo "<b>Connecting...</b><br>";
+$conn = new mysqli($server,$username,$password,$dbname);
+
+//check conn
+if ($conn->connect_error) {
+	die ("Unable to connect to server: " . $conn->connect_error() . "<br>");
+}
+echo "<b>Connected!</b><br>";
+
+// Escape user inputs for security
+$first = mysqli_real_escape_string($conn, $_POST['first']);
+$last=mysqli_real_escape_string($conn,$_POST['last']);
+$phone=mysqli_real_escape_string($conn,$_POST['phone']);
+$mobile=mysqli_real_escape_string($conn,$_POST['mobile']);
+$fax=mysqli_real_escape_string($conn,$_POST['fax']);
+$email=mysqli_real_escape_string($conn,$_POST['email']);
+$web=mysqli_real_escape_string($conn,$_POST['web']);
+
+ 
+// attempt insert query execution
+$sql = "INSERT INTO contacts VALUES (0,'$first','$last','$phone','$mobile','$fax','$email','$web')";
+if($conn->query($sql) === TRUE){
+	$last_id = $conn->insert_id;
+	echo "Records added successfully. Last inserted ID is: " . $last_id . "<br>";
+} else{
+    echo "ERROR: Could not able to execute $sql. " . $conn->error . "<br>";
+}
+echo "<b>Query completed</b><br>";
+
+echo "<b>Reading Data</b><br>";
+$sql = "SELECT * FROM contacts";
+$result = $conn->query($sql);
+
+$conn->close();
+echo "<b>Connection Closed</b><br>";
+
+echo "<b><center>Database Output</center></b><br><br>";
+if ($result->num_rows > 0) {
+	//output each row data
+	while ($row = $result->fetch_assoc()){
+		echo "<br>Name: ". $row["first"]. ", " 
+					.$row["last"]. " " 
+					.$row["phone"]. " " 
+					.$row["mobile"]. " " 
+					.$row["fax"]. " " 
+					.$row["email"]. " " 
+					.$row["web"]. "<br>"; 
+	}
+} else {
+	echo "No results";
+}
+
+
+
+?>

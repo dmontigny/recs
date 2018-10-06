@@ -1,0 +1,7 @@
+<?php
+echo "<b>Setting variables</b><br>";
+
+$server 	= 'localhost';
+$username	= 'root';
+$password	= '37sunrise';
+?>

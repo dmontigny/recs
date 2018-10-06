@@ -1,0 +1,34 @@
+<?php
+$str="<b>Initializing...</b><br>";
+echo $str;
+
+$server 	= "localhost";
+$username	= "root";
+$password	= "37sunrise";
+$dbname	= "apache_test";
+
+echo "<b>Connecting...</b><br>";
+$conn = new mysqli($server,$username,$password,$dbname);
+
+//check conn
+if ($conn->connect_error) {
+	die ("Unable to connect to server: " . $conn->connect_error());
+}
+echo "<b>Connected!</b><br>";
+
+$sql="CREATE TABLE contacts (id int(6) NOT NULL auto_increment,first varchar(15) NOT NULL,
+	last varchar(15) NOT NULL,phone varchar(20) NOT NULL,mobile varchar(20) NOT NULL,
+	fax varchar(20) NOT NULL,email varchar(30) NOT NULL,web varchar(30) NOT NULL,
+	PRIMARY KEY (id),UNIQUE id (id),KEY id_2 (id))";
+mysql_query($query);
+
+
+if ($conn->query($sql) === TRUE) {
+	echo "Table created<br>";
+} else {
+	echo "Table error: " . $conn->error . "<br>";
+}
+
+$conn->close();
+
+?>

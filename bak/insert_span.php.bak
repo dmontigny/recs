@@ -1,0 +1,58 @@
+<?php
+
+
+
+
+$str="<b>Initializing...</b><br>";
+echo $str;
+include("dbinfo.inc.php");
+
+$dbname		= "recs";
+
+echo "<b>Connecting...</b><br>";
+$conn = new mysqli($server,$username,$password,$dbname);
+
+//check conn
+if ($conn->connect_error) {
+	die ("Unable to connect to server: " . $conn->connect_error() . "<br>");
+}
+echo "<b>Connected!</b><br>";
+
+//query
+$sql="SELECT idpeep,namelast,namefirst FROM recs.peeps";
+$result = $conn->query($sql);
+
+
+
+echo "<select id = 'id' name='id'>";
+
+while($rs = $result->fetch_object()) {
+	$fullname = $rs->namelast . $rs->namefirst;
+      echo "<option value='{$rs->id}'>$fullname</option>\n";
+  }
+//}
+echo "</select>";
+
+
+
+/*
+
+// Escape user inputs for security
+$start_date = mysqli_real_escape_string($conn, $_POST['startdate']);
+$stop_date = mysqli_real_escape_string($conn, $_POST['stopdate']);
+$status = mysqli_real_escape_string($conn, $_POST['status']);
+$facility = mysqli_real_escape_string($conn, $_POST['facility']);
+ 
+// attempt insert query execution
+$sql = "INSERT INTO peeps (startdate, stopdate, status, facility) VALUES ('$start_date', '$stop_date', '$status', '$facility')";
+if($conn->query($sql) === TRUE){
+	$last_id = $conn->insert_id;
+	echo "Records added successfully. Last inserted ID is: " . $last_id . "<br>";
+} else{
+    echo "ERROR: Could not able to execute $sql. " . $conn->error . "<br>";
+}
+*/
+$conn->close();
+
+
+?>

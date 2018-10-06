@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Add Records Form</title>
+</head>
+<body>
+<form action="insert_peep.php" method="post">
+    <p>
+        <label for="lastName">Last:</label>
+        <input type="text" name="lastname" id="lastName">
+    </p>
+    <p>
+        <label for="firstName">First:</label>
+        <input type="text" name="firstname" id="firstName">
+    </p>
+    <p>
+        <label for="midName">Middle:</label>
+        <input type="text" name="midname" id="midName">
+    </p>
+    <input type="submit" value="Add Records">
+</form>
+</body>
+</html>
