@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Show Span</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+    integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  </head>
+  <body>
+
+  	<!-- DOCUMENTATION NAVBAR -->
+
+  	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+
+      <a class="navbar-brand" href="#">Records</a>
+
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <!-- This is the actual code that creates the "hamburger icon" -->
+      <!-- The data-target grabs ids to put into the icon -->
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-controls="bs-example-navbar-collapse-1" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+
+      <!-- Anything inside of collapse navbar-collapse goes into the "hamburger" -->
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <div class="navbar-nav">
+
+          <!-- the span class "sr-only" tells screen readers that Home is the active link, for accessibility -->
+            <a class="nav-item nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
+            <a class="nav-item nav-link" href="show_span1.html">Show Span</a>
+            <a class="nav-item nav-link" href="new_span1.html">New Span</a>
+            <a class="nav-item nav-link" href="edit_span1.html">Edit Span</a>
+            <a class="nav-item nav-link" href="new_peep1.html">New Peep</a>
+            <a class="nav-item nav-link" href="edit_peep1.html">Edit Peep</a>
+
+
+        </div> <!-- /.navbar-nav, left-hand content -->
+
+      </div> <!-- /.navbar-collapse -->
+    </nav>
+
+
+  <!-- OTHER STUFF ON THE PAGE -->
+
+<div class="container"
+	<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']);?>">
+		<p>
+			<label for="lastName">Last:</label>
+			<input type="text" name="lastname" id="lastname">
+		</p>
+		<p>
+			<label for="firstName">First:</label>
+			<input type="text" name="firstname" id="firstname">
+		</p>
+		<p>
+			<label for="midName">Middle:</label>
+			<input type="text" name="midname" id="midname">
+		</p>
+		<p>
+			<label for="dob">DOB:</label>
+			<input type="text" name="dob" id="dob">
+		</p>
+		<input type="submit" name="AddPeep" value="Add Peep">
+		<input type="reset" name="Clear" value="Clear Form">
+	</form>
+
+	<?php
+	if($_SERVER['REQUEST_METHOD'] == "POST"){
+		if (isset($_POST['Clear']) && !empty($_POST['Clear']))
+		{
+			unset($_POST);
+			$_POST = array();
+		}
+
+		if (isset($_POST['AddPeep']) && !empty($_POST['AddPeep']) )
+		{
+		require("dbinfo.inc.php");
+		$errors = array( ); // Initialize an error array.
+
+		if (empty($_POST['lastname']))
+			$errors[ ] = 'You forgot to enter a last name.';
+		else
+			$last_name = mysqli_real_escape_string($conn, trim($_POST['lastname']));
+
+		if (empty($_POST['firstname']))
+			$errors[ ] = 'You forgot to enter a first name.';
+		else
+			$first_name = mysqli_real_escape_string($conn, trim($_POST['firstname']));
+
+		$mid_name = mysqli_real_escape_string($conn, trim($_POST['midname']));
+
+		if (empty($_POST['dob']))
+			$errors[ ] = 'You forgot to enter a date of birth.';
+		else
+		$dob = mysqli_real_escape_string($conn, trim($_POST['dob']));
+
+		if (empty($errors))
+		{
+			// attempt insert query execution
+			$sql = "INSERT INTO peeps (namelast, namefirst, namemid, dob) VALUES ('$last_name', '$first_name', '$mid_name', '$dob')";
+			if($conn->query($sql) === TRUE){
+				$last_id = $conn->insert_id;
+				echo "Records added successfully. Last inserted ID is: " . $last_id . "<br>";
+				unset($_POST['AddPeep']);
+			}
+			else
+			{
+				echo "ERROR: Could not able to execute $sql. " . $conn->error . "<br />";
+				$conn->close();
+				include ('includes/footer.html');
+				exit();
+			}
+		}
+		else
+		{
+			echo '<h1>Error!</h1>
+			<p class="error">The following error(s) occurred:<br />';
+			foreach ($errors as $msg) { // Print each error.
+				echo " - $msg<br />\n";
+			}
+			echo '</p><p>Please try again.</p><p><br /></p>';
+		} // End of if (empty($errors)) IF.
+
+
+		$conn->close();
+		}
+	}
+	?>
+
+</div> <!-- /.container -->
+
+
+  <!-- Need to have JQuery and Javascript for DropDown Actions to work -->
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>View Events Form</title>
+<style>
+table { table-layout: auto;
+		border:	1px solid black;
+}
+table, th, td {
+    border:	1px solid black;
+}
+td.last {
+    width: 1px;
+    white-space: nowrap;
+}
+</style>
+</head>
+<body>
+
+<?php
+//echo "<b>Initializing...</b><br>";
+include("dbinfo.inc.php");
+include("funcs.php");
+dbname		= "recs";
+$conn = new mysqli(server,username,$password,dbname);
+if ($conn->connect_error) {
+	die ("Unable to connect to server: " . $conn->connect_error() . "<br>");
+}
+$sql="SELECT idpeep,namelast,namefirst FROM recs.peeps ORDER BY namelast ASC";
+$result = $conn->query($sql);
+?>
+
+<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']);?>">
+<label for='name'>Peep:</label>
+<select name='peepsel' value='select'>
+<option value='1000000'>All future events</option>
+<option value='1000001'>All past events</option>
+<option value='1000002'>All events</option>
+<br>
+
+<?php
+while($rs = $result->fetch_object()) 
+{
+	$fullname = $rs->namelast . ', ' . $rs->namefirst;
+     echo "<option ";
+     if($_POST['idpeep']==$rs->idpeep) echo 'selected ';
+     echo "value='{$rs->idpeep}'>$fullname</option>\n";
+}
+?>
+</select>
+<input type="submit" name="submit" value="Select">
+</form>
+
+<?php if (isset($_POST['submit'])) 
+{
+	$key = $_POST['peepsel'];
+	
+	echo "<table><tr>";
+	if ($key>999999)
+		echo"<th>Name</th>";
+	echo"<th>Type</th>
+		<th>Date</th>
+		<th>Time</th>
+		<th>Facility</th>
+	</tr>";
+	
+	$sql3 = "SELECT events.idevent, events.eventdate, events.eventtime, ";
+	$sql3 .= "eventlist.eventtype, facilities.facility ";
+	if ($key>999999)
+		$sql3 .= ", peeps.namelast, peeps.namefirst ";
+	$sql3 .= "FROM recs.events ";
+	$sql3 .= "INNER JOIN eventlist ON events.ideventtype=eventlist.ideventtype ";
+	$sql3 .= "INNER JOIN facilities ON events.idfacility=facilities.idfacility ";
+	if ($key>999999)
+	{
+		$sql3 .= "INNER JOIN peeps ON events.idpeep=peeps.idpeep ";
+		switch ($key){
+			case 1000000:	//future
+				$sql3 .= " WHERE events.eventdate>CURDATE() ORDER BY events.eventdate ASC;";
+				break;
+			case 1000001:	//past
+				$sql3 .= " WHERE events.eventdate<=CURDATE() ORDER BY events.eventdate DESC;";
+				break;
+			case 1000002:	//all
+				$sql3 .= " ORDER BY events.eventdate ASC;";
+				break;
+		}
+	}
+	else
+		$sql3 .= " WHERE events.idpeep='".$key."' ORDER BY events.eventdate ASC;";
+
+//	echo $sql3 . "<br>";
+	$result3 = $conn->query($sql3);
+
+	while($rs3 = $result3->fetch_object( )) 
+	{ 
+		echo "<tr>";
+		if ($key>999999)
+		{
+			$fullname = $rs3->namelast . ', ' . $rs3->namefirst;
+			echo "<th>" .$fullname."</th>";
+		}
+		echo "<th>" .$rs3->eventtype."</th>";
+		echo "<th>". $rs3->eventdate . "</th>";
+		echo "<th>". $rs3->eventtime . "</th>";
+		echo "<th>". $rs3->facility . "</th>";
+		echo "</tr>";
+		
+	}
+} 
+?>
+</table>
+</body>
+</html>

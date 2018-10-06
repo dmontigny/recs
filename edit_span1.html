@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Edit Span</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+    integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  </head>
+  <body>
+
+  	<!-- DOCUMENTATION NAVBAR -->
+
+  	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+
+      <a class="navbar-brand" href="#">Records</a>
+
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <!-- This is the actual code that creates the "hamburger icon" -->
+      <!-- The data-target grabs ids to put into the icon -->
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-controls="bs-example-navbar-collapse-1" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+
+      <!-- Anything inside of collapse navbar-collapse goes into the "hamburger" -->
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <div class="navbar-nav">
+
+          <!-- the span class "sr-only" tells screen readers that Home is the active link, for accessibility -->
+            <a class="nav-item nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
+            <a class="nav-item nav-link" href="show_span1.html">Show Span</a>
+            <a class="nav-item nav-link" href="new_span1.html">New Span</a>
+            <a class="nav-item nav-link" href="edit_span1.html">Edit Span</a>
+            <a class="nav-item nav-link" href="new_peep1.html">New Peep</a>
+            <a class="nav-item nav-link" href="edit_peep1.html">Edit Peep</a>
+
+
+        </div> <!-- /.navbar-nav, left-hand content -->
+
+      </div> <!-- /.navbar-collapse -->
+    </nav>
+
+
+  <!-- OTHER STUFF ON THE PAGE -->
+
+<div class="container">
+	<?php
+	//include ('includes/header.html');
+	require("dbinfo.inc.php");
+	$sql="SELECT idpeep,namelast,namefirst FROM recs.peeps ORDER BY namelast ASC";
+	$result = $conn->query($sql);
+	global $key;
+	?>
+
+	<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']);?>">
+	<label for='name'>Peep:</label>
+	<select name='peepsel' value='select'>
+	<option value='0'>Select peep</option>
+	<?php
+	//if(isset($_REQUEST['peepsel']))
+	//{
+		$selected = isset($_REQUEST['peepsel']) ? $_REQUEST['peepsel'] :NULL ;
+		while($rs = $result->fetch_object())
+		{
+			$fullname = $rs->namelast . ', ' . $rs->namefirst;
+			echo "<option ";
+			if($_POST['peepsel']==$rs->idpeep) echo 'selected ';
+			echo "value='{$rs->idpeep}'>$fullname</option>\n";
+		}
+	//}
+	?>
+	</select>
+	<input type="submit" name="submit" value="Select">
+	</form>
+
+
+	<?php
+	if (isset($_POST['submit']) && !empty($_POST['submit']))
+	{
+		$key = $_POST['peepsel'];
+		//echo "idpeep1=".$key."<br>";
+		$sql3 = "SELECT span.idspan, span.startdate, span.stopdate,";
+		$sql3 .=" span.idstatus, span.pic, status.status, span.idfacility, facilities.facility, ";
+		$sql3 .=" peeps.namelast, peeps.namefirst ";
+		$sql3 .= "FROM recs.span ";
+		$sql3 .= "INNER JOIN peeps ON peeps.idpeep=span.idpeep ";
+		$sql3 .= "INNER JOIN status ON span.idstatus=status.idstatus ";
+		$sql3 .= "INNER JOIN facilities ON span.idfacility=facilities.idfacility ";
+		$sql3 .= " WHERE span.idpeep='".$key."' ORDER BY span.startdate DESC;";
+
+	//	echo $sql3 . "<br>";
+		$result3 = $conn->query($sql3);
+		?>
+		<form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']);?>"
+		<?php
+		//echo "idpeep1=".$key."<br>";
+		$cnt = "1";
+		//unset($fullname);
+		//echo "Name = ".$fullname."<br>";
+		while($rs3 = $result3->fetch_object( ))
+		{
+			if (empty($fullname3)){
+				$fullname3 = $rs3->namelast.", ".$rs3->namefirst;
+				echo "Name = ".$fullname3."<br>";
+				echo "<input type='hidden' 5name='idname' value=".$fullname3.">";
+				?>
+				<table>
+					<tr>
+						<th>Span ID</th>
+						<th>From</th>
+						<th>To</th>
+						<th>Status</th>
+						<th>Facility</th>
+						<th>Pic</th>
+						<th>Update</th>
+						<th>Delete</th>
+					</tr>
+				<?php
+			}
+			echo "<tr>";
+				echo "<td><input type='text' name='idspan1[$cnt]' id='name' size='6' value=".$rs3->idspan."></td>";
+				echo "<td><input type='text' name='startdate1[$cnt]' id='name' size='11' value=".$rs3->startdate."></td>";
+				echo "<td><input type='text' name='stopdate1[$cnt]' id='name' size='11' value=".$rs3->stopdate."></td>";
+				echo "<td>";
+					$sql="SELECT idstatus,status FROM recs.status";
+					$result = $conn->query($sql);
+					echo "<select name='statsel1[$cnt]' value='select'>";
+						while($rs = $result->fetch_object())
+						{
+							echo "<option ";
+							if($rs3->idstatus==$rs->idstatus) echo 'selected ';
+							 echo "value='{$rs->idstatus}'>$rs->status\n</option>";
+						}
+				echo "</select></td>";
+				echo "<td>";
+					$sql="SELECT idfacility,facility FROM recs.facilities";
+					$result = $conn->query($sql);
+					//$selected = "";
+					echo "<select name='facsel1[$cnt]' value='select'>";
+						while($rs = $result->fetch_object())
+						{
+							echo "<option ";
+							if($rs3->idfacility==$rs->idfacility) echo 'selected ';
+							 echo "value='{$rs->idfacility}'>$rs->facility\n</option>";
+						}
+				echo "</select></td>";
+				echo "<td><input type='text' name='pic1[$cnt]' id='name' size='20' value=".$rs3->pic."></td>";
+				echo "<td align='center'><input type='checkbox' name='updateme[$cnt]' value=".$cnt."></td>";
+				echo "<td align='center'><input type='checkbox' name='deleteme[$cnt]' value=".$cnt."></td>";
+			echo "</select></tr>";
+
+			$cnt++;
+		}
+		echo "</table>";
+	}
+	?>
+
+	<input type="submit" name="submit2" value="Update"><br>
+	</table>
+	</form>
+
+	<?php
+	if (isset($_POST['submit2']) && !empty($_POST['submit2']))
+	{
+	$idupdate = count($_POST['updateme']) ? $_POST['updateme'] : array();
+	//echo "count = ",count($idupdate) ? implode(', ',$idupdate) : 'Nothing'."<br>";
+	//echo "<br>";
+	//echo "Checked count = ".count($idupdate)."<br>";
+	$idspan1	= $_POST['idspan1'];
+	$startdate1	= $_POST['startdate1'];
+	$stopdate1	= $_POST['stopdate1'];
+	$status1	= $_POST['statsel1'];
+	$facility1	= $_POST['facsel1'];
+	$pic1		= $_POST['pic1'];
+
+	//$fullname3 = $_POST['idname'];
+
+	//echo "Update for ".$fullname3."<br>";
+	//echo "Key = ".$key."<br>";
+	?>
+		<table>
+			<tr>
+				<th>Span ID</th>
+				<th>New From</th>
+				<th>New To</th>
+				<th>New Status</th>
+				<th>New Facility</th>
+				<th>New Pic</th>
+			</tr>
+	<?php
+		if (isset($_POST['submit2']) && (is_array($_POST['updateme']) || is_object($_POST['updateme']))){
+			$sqlup = "";
+			foreach($_POST['updateme'] as $key1=>$value){
+				echo"<tr>";
+				echo "<td>".validateCell($idspan1[$key1])."</td>";
+				echo "<td>".validateCell($startdate1[$key1])."</td>";
+				echo "<td>".validateCell($stopdate1[$key1])."</td>";
+				if (!empty($status1[$key1])){
+					$sqlstat="SELECT idstatus, status FROM recs.status WHERE idstatus='".$status1[$key1]."';";
+					$rsstat = $conn->query($sqlstat);
+					$rs = $rsstat->fetch_object();
+					echo "<td>".$rs->status."</td>";
+				}
+				else{
+					echo "<td>".validateCell($status1[$key1])."</td>";
+				}
+				if (!empty($facility1[$key1])){
+					$sqlfac="SELECT idfacility, facility FROM recs.facilities WHERE idfacility='".$facility1[$key1]."';";
+					$rsfac = $conn->query($sqlfac);
+					$rs = $rsfac->fetch_object();
+					echo "<td>".$rs->facility."</td>";
+				}
+				else{
+					echo "<td>".validateCell($facility1[$key1])."</td>";
+				}
+				echo "<td>".validateCell($pic1[$key1])."</td>";
+				echo"</tr>";
+
+				$sqlup = "UPDATE recs.span ";
+				$sqlup .= "SET startdate=".validateCell($startdate1[$key1]).", ";
+				$sqlup .= "stopdate=".validateCell($stopdate1[$key1]).", ";
+				$sqlup .= "idstatus=".validateCell($status1[$key1]).", ";
+				$sqlup .= "idfacility=".validateCell($facility1[$key1]).", ";
+				$sqlup .= "pic=".validateCell($pic1[$key1])." ";
+				$sqlup .= "WHERE span.idspan = '$idspan1[$key1]';";
+
+				//echo $sqlup."<br>";
+				$resultup = $conn->query($sqlup);
+
+				if (!$resultup) {
+					echo "Update record failed: (" . $conn->errno . ") " . $conn->error."<br>";
+				} else {
+					echo $conn->affected_rows." records UPDATED successfully<br>";
+				}
+			}
+		}
+		//echo $sqlfac."<br>";
+
+	//$iddelete = count($_POST['deleteme']) ? $_POST['deleteme'] : array();
+	//echo "count = ".count($iddelete) ? implode(', ',$iddelete) : 'Nothing'."<br>";
+	//echo "<br>";
+
+	//$fullname4 	= $_POST['idname'];
+
+	//echo "Delete for ".$fullname4."<br>";
+
+		echo "<table>
+			<tr>
+				<th>Span ID</th>
+				<th>Old From</th>
+				<th>Old To</th>
+				<th>Old Status</th>
+				<th>Old Facility</th>
+				<th>Old Pic</th>
+			</tr>";
+		if (is_array($_POST['deleteme']) || is_object($_POST['deleteme'])){
+			$sqldel = "";
+			foreach($_POST['deleteme'] as $key1=>$value){
+				echo "<tr>";
+				echo "<td>".($idspan1[$key1])."</td>";
+				echo "<td>".($startdate1[$key1])."</td>";
+				echo "<td>".($stopdate1[$key1])."</td>";
+				if (!empty($status1[$key1])){
+					$sqlstat="SELECT idstatus, status FROM recs.status WHERE idstatus='".$status1[$key1]."';";
+					$rsstat = $conn->query($sqlstat);
+					$rs = $rsstat->fetch_object();
+					echo "<td>".$rs->status."</td>";
+				}
+				else{
+					echo "<td>".validateCell($status1[$key1])."</td>";
+				}
+				if (!empty($facility1[$key1])){
+					$sqlfac="SELECT idfacility, facility FROM recs.facilities WHERE idfacility='".$facility1[$key1]."';";
+					$rsfac = $conn->query($sqlfac);
+					$rs = $rsfac->fetch_object();
+					echo "<td>".$rs->facility."</td>";
+				}
+				else{
+					echo "<td>".validateCell($facility1[$key1])."</td>";
+				}
+				echo "<td>".validateCell($pic1[$key1])."</td>";
+				echo"</tr>";
+
+				$sqldel = "DELETE FROM recs.span ";
+				$sqldel .= "WHERE span.idspan = '$idspan1[$key1]';";
+
+				//echo $sqldel."<br>";
+				//echo "sqlfac=",$sqlfac."<br>";
+				$resultdel = $conn->query($sqldel);
+
+				if (!$resultdel) {
+					echo "Delete record failed: (" . $conn->errno . ") " . $conn->error."<br>";
+				} else {
+					echo $conn->affected_rows." records DELETED successfully<br>";
+				}
+			}
+		}
+		echo "</table>";
+	}
+	$conn->close();
+	include ('includes/footer.html');
+
+	function validateCell ($celldata){
+		if(!empty($celldata))
+			return "'".$celldata."'";
+		else
+			return "NULL";
+	}
+	?>
+
+<div class="container">
+    <?php
+    require('dbinfo.inc.php');
+    require('funcs.php');
+    $sql="SELECT idpeep,namelast,namefirst FROM recs.peeps ORDER BY namelast ASC";
+    $result = $conn->query($sql);
+    ?>
+
+    <form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']);?>">
+    <label for='name'>Peep:</label>
+    <select name='peepsel' value='select'>
+    <option value='0'>Select peep</option>
+    <?php
+    $selected = isset($_REQUEST['peepsel']) ? $_REQUEST['peepsel'] :'';
+    while($rs = $result->fetch_object())
+    {
+        $fullname = $rs->namelast . ', ' . $rs->namefirst;
+        echo "<option ";
+        if($_POST['peepsel']==$rs->idpeep) echo 'selected ';
+        echo "value='{$rs->idpeep}'>$fullname</option>\n";
+    }
+    ?>
+    </select>
+    <input type="submit" name="submit" value="Select">
+
+
+    <table>
+        <tr>
+            <th>From</th>
+            <th>To</th>
+            <th>Status</th>
+            <th>Facility</th>
+            <th>Pic</th>
+        </tr>
+
+    <?php if (isset($_POST['submit']) && !empty($_POST['submit']))
+    {
+        $key = $_POST['peepsel'];
+        $sql3 = "SELECT span.idspan, span.startdate, span.stopdate,";
+        $sql3 .=" span.idstatus, span.pic, status.status, span.idfacility, facilities.facility ";
+        $sql3 .= "FROM recs.span ";
+        $sql3 .= "INNER JOIN status ON span.idstatus=status.idstatus ";
+        $sql3 .= "INNER JOIN facilities ON span.idfacility=facilities.idfacility ";
+        $sql3 .= " WHERE span.idpeep='".$key."' ORDER BY span.startdate DESC, span.stopdate DESC;";
+        $todaydate = date("Y-m-d");
+
+        //echo $sql3 . "<br>";
+        $path = "http://".$_SERVER["SERVER_NAME"]."/mugs/";
+        $result3 = $conn->query($sql3);
+
+        while($rs3 = $result3->fetch_object( ))
+        {
+            echo "<tr><td>" .$rs3->startdate."</td>";
+            $enddate = $rs3->stopdate;
+            if($enddate=="9999-12-31")
+            {
+                echo "<td>In Jail</td>";
+                $enddate = date("Y-m-d");
+            }
+            else if (!empty($enddate))
+            {
+                echo "<td>".$enddate;
+                if (($enddate>$todaydate) && $rs3->status == 2)
+                    echo "<br>Probation";
+                if (($enddate>$todaydate) && $rs3->status == 3)
+                    echo "<br>Locked Up";
+                if (($enddate>$todaydate) && $rs3->status == 4)
+                    echo "<br>Incarcerated";
+                echo "</td>";
+            }
+            else
+                echo "<td>No Date</td>";
+            echo "<td>". $rs3->status . "</td>";
+            echo "<td>". $rs3->facility . "</td>";
+            if(!empty($rs3->pic))
+            {
+                echo "<td><a href=/mugs/".$rs3->pic."><img src=/mugs/".$rs3->pic." height='125' width='100'></a>";
+                echo "</td>";
+            }
+            else
+                echo "<td>No Pic</td>";
+            echo "</tr>";
+
+            //. get_time_difference($rs3->startdate, $rs3->stopdate).;
+
+            if( $diff=@get_time_difference($rs3->startdate, $enddate) )
+            {
+                $yearcnt=$diff['years'];
+                $monthcnt=$diff['months'];
+                $daycnt=$diff['days'];
+                echo "<tr><td colspan=5>";
+                echo "Time: ";
+                if (!empty($yearcnt))
+                {
+                    //sprintf( '%u', $yearcnt );
+                    echo $yearcnt." Year";
+                    if ($yearcnt>1)
+                        echo "s, ";
+                    else
+                        echo ", ";
+                }
+                if (!empty($monthcnt))
+                {
+                    echo $monthcnt . " Month";
+                    if ($monthcnt>1)
+                        echo "s, ";
+                    else
+                        echo ", ";
+                }
+                if (!empty($daycnt))
+                {
+                    echo $daycnt." Day";
+                    if ($daycnt>1)
+                        echo "s";
+                }
+                if ($yearcnt==0 && $monthcnt==0 && $daycnt==0)
+                    echo " <1 Day";
+                echo "</td></tr>";
+            }
+        }
+    }
+    echo "</form>";
+    $conn->close();
+    ?>
+    </table>
+
+</div> <!-- /.container -->
+
+
+  <!-- Need to have JQuery and Javascript for DropDown Actions to work -->
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+</body>
+</html>

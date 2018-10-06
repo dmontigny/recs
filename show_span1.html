@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Show Span</title>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css"
+    integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+
+  </head>
+  <body>
+
+  	<!-- DOCUMENTATION NAVBAR -->
+
+  	<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+
+      <a class="navbar-brand" href="#">Records</a>
+
+      <!-- Brand and toggle get grouped for better mobile display -->
+      <!-- This is the actual code that creates the "hamburger icon" -->
+      <!-- The data-target grabs ids to put into the icon -->
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-controls="bs-example-navbar-collapse-1" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+
+      <!-- Anything inside of collapse navbar-collapse goes into the "hamburger" -->
+      <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+        <div class="navbar-nav">
+
+          <!-- the span class "sr-only" tells screen readers that Home is the active link, for accessibility -->
+            <a class="nav-item nav-link active" href="#">Home <span class="sr-only">(current)</span></a>
+            <a class="nav-item nav-link" href="show_span1.html">Show Span</a>
+            <a class="nav-item nav-link" href="new_span1.html">New Span</a>
+            <a class="nav-item nav-link" href="edit_span1.html">Edit Span</a>
+            <a class="nav-item nav-link" href="new_peep1.html">New Peep</a>
+            <a class="nav-item nav-link" href="edit_peep1.html">Edit Peep</a>
+
+
+        </div> <!-- /.navbar-nav, left-hand content -->
+
+      </div> <!-- /.navbar-collapse -->
+    </nav>
+
+
+  <!-- OTHER STUFF ON THE PAGE -->
+
+<div class="container">
+    <?php
+    require('dbinfo.inc.php');
+    require('funcs.php');
+    $sql="SELECT idpeep,namelast,namefirst FROM recs.peeps ORDER BY namelast ASC";
+    $result = $conn->query($sql);
+    ?>
+
+    <form method="post" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']);?>">
+    <label for='name'>Peep:</label>
+    <select name='peepsel' value='select'>
+    <option value='0'>Select peep</option>
+    <?php
+    $selected = isset($_REQUEST['peepsel']) ? $_REQUEST['peepsel'] :'';
+    while($rs = $result->fetch_object())
+    {
+        $fullname = $rs->namelast . ', ' . $rs->namefirst;
+        echo "<option ";
+        if($_POST['peepsel']==$rs->idpeep) echo 'selected ';
+        echo "value='{$rs->idpeep}'>$fullname</option>\n";
+    }
+    ?>
+    </select>
+    <input type="submit" name="submit" value="Select">
+
+
+    <table>
+        <tr>
+            <th>From</th>
+            <th>To</th>
+            <th>Status</th>
+            <th>Facility</th>
+            <th>Pic</th>
+        </tr>
+
+    <?php if (isset($_POST['submit']) && !empty($_POST['submit']))
+    {
+        $key = $_POST['peepsel'];
+        $sql3 = "SELECT span.idspan, span.startdate, span.stopdate,";
+        $sql3 .=" span.idstatus, span.pic, status.status, span.idfacility, facilities.facility ";
+        $sql3 .= "FROM recs.span ";
+        $sql3 .= "INNER JOIN status ON span.idstatus=status.idstatus ";
+        $sql3 .= "INNER JOIN facilities ON span.idfacility=facilities.idfacility ";
+        $sql3 .= " WHERE span.idpeep='".$key."' ORDER BY span.startdate DESC, span.stopdate DESC;";
+        $todaydate = date("Y-m-d");
+
+        //echo $sql3 . "<br>";
+        $path = "http://".$_SERVER["SERVER_NAME"]."/mugs/";
+        $result3 = $conn->query($sql3);
+
+        while($rs3 = $result3->fetch_object( ))
+        {
+            echo "<tr><td>" .$rs3->startdate."</td>";
+            $enddate = $rs3->stopdate;
+            if($enddate=="9999-12-31")
+            {
+                echo "<td>In Jail</td>";
+                $enddate = date("Y-m-d");
+            }
+            else if (!empty($enddate))
+            {
+                echo "<td>".$enddate;
+                if (($enddate>$todaydate) && $rs3->status == 2)
+                    echo "<br>Probation";
+                if (($enddate>$todaydate) && $rs3->status == 3)
+                    echo "<br>Locked Up";
+                if (($enddate>$todaydate) && $rs3->status == 4)
+                    echo "<br>Incarcerated";
+                echo "</td>";
+            }
+            else
+                echo "<td>No Date</td>";
+            echo "<td>". $rs3->status . "</td>";
+            echo "<td>". $rs3->facility . "</td>";
+            if(!empty($rs3->pic))
+            {
+                echo "<td><a href=/mugs/".$rs3->pic."><img src=/mugs/".$rs3->pic." height='125' width='100'></a>";
+                echo "</td>";
+            }
+            else
+                echo "<td>No Pic</td>";
+            echo "</tr>";
+
+            //. get_time_difference($rs3->startdate, $rs3->stopdate).;
+
+            if( $diff=@get_time_difference($rs3->startdate, $enddate) )
+            {
+                $yearcnt=$diff['years'];
+                $monthcnt=$diff['months'];
+                $daycnt=$diff['days'];
+                echo "<tr><td colspan=5>";
+                echo "Time: ";
+                if (!empty($yearcnt))
+                {
+                    //sprintf( '%u', $yearcnt );
+                    echo $yearcnt." Year";
+                    if ($yearcnt>1)
+                        echo "s, ";
+                    else
+                        echo ", ";
+                }
+                if (!empty($monthcnt))
+                {
+                    echo $monthcnt . " Month";
+                    if ($monthcnt>1)
+                        echo "s, ";
+                    else
+                        echo ", ";
+                }
+                if (!empty($daycnt))
+                {
+                    echo $daycnt." Day";
+                    if ($daycnt>1)
+                        echo "s";
+                }
+                if ($yearcnt==0 && $monthcnt==0 && $daycnt==0)
+                    echo " <1 Day";
+                echo "</td></tr>";
+            }
+        }
+    }
+    echo "</form>";
+    $conn->close();
+    ?>
+    </table>
+
+</div> <!-- /.container -->
+
+
+  <!-- Need to have JQuery and Javascript for DropDown Actions to work -->
+
+  <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+
+</body>
+</html>
