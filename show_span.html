@@ -86,7 +86,7 @@ while($rs = $result->fetch_object())
 	$todaydate = date("Y-m-d");
 	
 	//echo $sql3 . "<br>";
-	$path = "http://".$_SERVER["SERVER_NAME"]."/mugs/";
+	$path = "http://".$_SERVER["SERVER_NAME"]."/recs/mugs/";
 	$result3 = $conn->query($sql3);
 
 	while($rs3 = $result3->fetch_object( )) 
@@ -115,7 +115,7 @@ while($rs = $result->fetch_object())
 		echo "<td>". $rs3->facility . "</td>";
 		if(!empty($rs3->pic))
 		{
-			echo "<td><a href=/mugs/".$rs3->pic."><img src=/mugs/".$rs3->pic." height='125' width='100'></a>";
+			echo "<td><a href=/recs/mugs/".$rs3->pic."><img src=/recs/mugs/".$rs3->pic." height='125' width='100'></a>";
 			echo "</td>";
 		}
 		else
